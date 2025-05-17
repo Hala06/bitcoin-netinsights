@@ -6,10 +6,25 @@ import { OrbitControls, useGLTF, Environment } from '@react-three/drei'
 import * as THREE from 'three'
 import { useTheme } from 'next-themes'
 
+interface BitcoinGLTF extends THREE.Object3D {
+  geometry: THREE.BufferGeometry
+  material: THREE.Material
+}
+
+interface GLTFResult {
+  nodes: {
+    bitcoin: BitcoinGLTF
+  }
+  materials: {
+    gold: THREE.Material
+  }
+}
+
 function Bitcoin3DModel() {
   const { theme } = useTheme()
   const group = useRef<THREE.Group>(null)
-  const { nodes, materials } = useGLTF('/models/bitcoin.glb')
+  const model = useGLTF('/models/bitcoin.glb')
+  const { nodes, materials } = model as unknown as GLTFResult
   
   useFrame((state) => {
     if (group.current) {
@@ -40,6 +55,8 @@ function Bitcoin3DModel() {
     </group>
   )
 }
+
+useGLTF.preload('/models/bitcoin.glb')
 
 export default function BitcoinModel() {
   return (
