@@ -2,6 +2,18 @@
  * API service for tracking BRC-20 tokens and memecoin activity on Bitcoin
  */
 
+export interface TokenInfo {
+  ticker: string;
+  name: string;
+  priceInBTC: number;
+  marketCapInBTC: number;
+  holders: number;
+  totalSupply: number;
+  deploymentBlock: number;
+  volume24h: number;
+  changePercent24h: number;
+}
+
 interface TokenVolume {
   token: string;
   volume24h: number; // USD
@@ -41,44 +53,37 @@ interface MemecoinsStats {
 /**
  * Get current memecoin and BRC-20 token statistics
  */
-export async function getMemecoinsActivity(): Promise<MemeTokenEvent[]> {
-  // Mock implementation for recent memecoin activity
-  const tokens = ['ORDI', 'SATS', 'MEME', 'PEPE', 'WOJAK'];
-  const types: ('mint' | 'transfer' | 'list' | 'sale')[] = ['mint', 'transfer', 'list', 'sale'];
+export async function getMemecoinsActivity(): Promise<{
+  totalTokens: number;
+  uniqueHolders: number;
+  dailyTransactions: number;
+  top10Tokens: TokenInfo[];
+}> {
+  const tokens = ['ORDI', 'SATS', 'MEME', 'PEPE', 'WOJAK', 'DOGE', 'BITCOIN', 'SHIB', 'MOON', 'PUMP'];
   const result = [];
-  const now = Date.now();
 
   for (let i = 0; i < 10; i++) {
-    const minutesAgo = Math.floor(Math.random() * 60);
-    const timestamp = new Date(now - minutesAgo * 60000).toISOString();
-    const token = tokens[Math.floor(Math.random() * tokens.length)];
-    const ticker = token.substring(0, 3).toUpperCase();
-    const priceInBTC = parseFloat((Math.random() * 0.01).toFixed(8));
-    const changePercent24h = parseFloat((Math.random() * 20 - 10).toFixed(2));
-    const volume24h = parseFloat((Math.random() * 1000).toFixed(2));
-    const type = types[Math.floor(Math.random() * types.length)];
-    const amount = Math.floor(Math.random() * 100000) + 1000;
-    let price;
-
-    if (type === 'list' || type === 'sale') {
-      price = parseFloat((Math.random() * 1000 + 10).toFixed(2));
-    }
-
-    result.push({
-      token,
+    const ticker = tokens[i];
+    const token: TokenInfo = {
       ticker,
-      priceInBTC,
-      changePercent24h,
-      volume24h,
-      type,
-      amount,
-      price,
-      timestamp,
-      txid: Array.from({ length: 64 }, () => '0123456789abcdef'[Math.floor(Math.random() * 16)]).join(''),
-    });
+      name: `${ticker} Token`,
+      priceInBTC: parseFloat((Math.random() * 0.01).toFixed(8)),
+      marketCapInBTC: parseFloat((Math.random() * 1000).toFixed(2)),
+      holders: Math.floor(Math.random() * 50000) + 1000,
+      totalSupply: Math.floor(Math.random() * 1000000000) + 1000000,
+      deploymentBlock: 800000 + Math.floor(Math.random() * 50000),
+      volume24h: parseFloat((Math.random() * 1000).toFixed(2)),
+      changePercent24h: parseFloat((Math.random() * 20 - 10).toFixed(2))
+    };
+    result.push(token);
   }
 
-  return result;
+  return {
+    totalTokens: Math.floor(Math.random() * 500) + 1000,
+    uniqueHolders: Math.floor(Math.random() * 100000) + 50000,
+    dailyTransactions: Math.floor(Math.random() * 50000) + 10000,
+    top10Tokens: result
+  };
 }
 
 export async function getTokenCreationHistory(): Promise<{ date: string; tokensCreated: number }[]> {

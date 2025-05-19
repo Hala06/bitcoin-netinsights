@@ -3,23 +3,28 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Network, ChevronRight, ArrowUpRight, Activity, Server, Users } from 'lucide-react';
-import { getDrivechainStats, getDrivechainTransactionHistory } from '@/app/lib/drivechain';
+import { getDrivechainStats } from '@/app/lib/drivechain';
 
 interface Drivechain {
-  id: string;
   name: string;
-  status: 'active' | 'proposed';
-  nodeCount: number;
-  totalValue: number;
-  blockHeight: number;
-  transactionCount: number;
-  hashrate?: number;
-  description?: string;
+  totalTransactions: number;
+  activeUsers: number;
+  tpsAverage: number;
+  mainchainFootprint: number;
+  hashrate: string;
+  status: 'active' | 'inactive' | 'developing';
 }
 
 interface DrivechainStats {
-  totalActiveDrivechains: number;
-  drivechains: Drivechain[];
+  totalSidechains: number;
+  activeSidechains: number;
+  totalTps: number;
+  totalActiveUsers: number;
+  sidechains: Drivechain[];
+  historicalActivity: {
+    date: string;
+    transactions: number;
+  }[];
 }
 
 interface DrivechainActivityProps {
@@ -32,21 +37,17 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
   const [error, setError] = useState<string | null>(null);
   const [selectedDrivechain, setSelectedDrivechain] = useState<Drivechain | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [txHistory, setTxHistory] = useState<{date: string, transactions: number}[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const drivechainData = await getDrivechainStats();
-        setData(() => drivechainData);
+        setData(drivechainData);
 
-
-        const activeChains = drivechainData.drivechains.filter((dc: Drivechain) => dc.status === 'active');
+        const activeChains = drivechainData.sidechains.filter((dc: Drivechain) => dc.status === 'active');
         if (activeChains.length > 0 && !selectedDrivechain) {
           setSelectedDrivechain(activeChains[0]);
-          const history = await getDrivechainTransactionHistory(activeChains[0].id);
-          setTxHistory(history);
         }
 
         setError(null);
@@ -63,22 +64,7 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
     return () => clearInterval(intervalId);
   }, []);
 
-  useEffect(() => {
-    if (!selectedDrivechain) return;
-
-    const fetchHistory = async () => {
-      try {
-        const history = await getDrivechainTransactionHistory(selectedDrivechain.id);
-        setTxHistory(history);
-      } catch (err) {
-        console.error(`Error fetching history for ${selectedDrivechain.id}:`, err);
-      }
-    };
-
-    fetchHistory();
-  }, [selectedDrivechain]);
-
-  const handleDrivechainSelect = async (drivechain: Drivechain) => {
+  const handleDrivechainSelect = (drivechain: Drivechain) => {
     setSelectedDrivechain(drivechain);
   };
 
@@ -100,7 +86,7 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
             Drivechain Activity
           </h3>
           <span className="px-3 py-1 text-sm bg-[#2A4E76]/20 text-[#77A1D3] rounded-full">
-            {data?.totalActiveDrivechains || 0} Active Chains
+            {data?.activeSidechains || 0} Active Chains
           </span>
         </div>
 
@@ -113,25 +99,25 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 relative">
-              {data!.drivechains.filter((dc: Drivechain) => dc.status === 'active').map((chain: Drivechain) => (
+              {data!.sidechains.filter((dc: Drivechain) => dc.status === 'active').map((chain: Drivechain) => (
                 <div 
-                  key={chain.id}
+                  key={chain.name}
                   onClick={() => handleDrivechainSelect(chain)}
                   className={`bg-gray-800/40 backdrop-blur-sm rounded-lg p-4 cursor-pointer transition-all border-2 ${
-                    selectedDrivechain?.id === chain.id 
+                    selectedDrivechain?.name === chain.name 
                       ? 'border-[#2A4E76]' 
                       : 'border-transparent hover:border-gray-700'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-white font-medium">{chain.name}</h4>
-                    {selectedDrivechain?.id === chain.id && (
+                    {selectedDrivechain?.name === chain.name && (
                       <div className="w-2 h-2 bg-[#2A4E76] rounded-full"></div>
                     )}
                   </div>
                   <div className="flex items-center justify-between text-xs text-gray-400">
-                    <span>{chain.nodeCount} Nodes</span>
-                    <span className="text-[#77A1D3]">{chain.totalValue} BTC</span>
+                    <span>{chain.activeUsers} Users</span>
+                    <span className="text-[#77A1D3]">{chain.tpsAverage} TPS</span>
                   </div>
                 </div>
               ))}
@@ -147,7 +133,7 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
                         Active
                       </span>
                     </div>
-                    <p className="text-gray-400 text-sm mt-1">{selectedDrivechain.description}</p>
+                    <p className="text-gray-400 text-sm mt-1">Mainchain Footprint: {selectedDrivechain.mainchainFootprint} bytes/24h</p>
                   </div>
                   <button 
                     onClick={toggleDetails}
@@ -171,8 +157,8 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
                           <p>
                             {selectedDrivechain.name} is a Bitcoin sidechain that allows for 
                             additional functionality while maintaining the security of the Bitcoin network.
-                            It currently has {selectedDrivechain.nodeCount} active nodes and 
-                            has processed {selectedDrivechain.transactionCount.toLocaleString()} transactions.
+                            It currently has {selectedDrivechain.activeUsers.toLocaleString()} active users and 
+                            has processed {selectedDrivechain.totalTransactions.toLocaleString()} transactions.
                           </p>
                         </div>
 
@@ -180,23 +166,23 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
                           <div className="bg-gray-800/40 p-3 rounded-lg">
                             <div className="flex items-center text-gray-400 text-xs mb-1">
                               <Server size={12} className="mr-1" />
-                              Block Height
+                              TPS Average
                             </div>
-                            <p className="text-white font-mono">{selectedDrivechain.blockHeight.toLocaleString()}</p>
+                            <p className="text-white font-mono">{selectedDrivechain.tpsAverage}</p>
                           </div>
                           <div className="bg-gray-800/40 p-3 rounded-lg">
                             <div className="flex items-center text-gray-400 text-xs mb-1">
                               <Users size={12} className="mr-1" />
-                              Nodes
+                              Active Users
                             </div>
-                            <p className="text-white">{selectedDrivechain.nodeCount}</p>
+                            <p className="text-white">{selectedDrivechain.activeUsers.toLocaleString()}</p>
                           </div>
                           <div className="bg-gray-800/40 p-3 rounded-lg">
                             <div className="flex items-center text-gray-400 text-xs mb-1">
                               <Activity size={12} className="mr-1" />
                               Hashrate
                             </div>
-                            <p className="text-white">{selectedDrivechain.hashrate || 'N/A'} {selectedDrivechain.hashrate ? 'TH/s' : ''}</p>
+                            <p className="text-white">{selectedDrivechain.hashrate}</p>
                           </div>
                         </div>
                       </div>
@@ -209,12 +195,16 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
                     <h4 className="text-white text-sm font-medium">Transaction Activity (30d)</h4>
                     <div className="flex items-center text-[#77A1D3] text-xs">
                       <ArrowUpRight size={12} className="mr-1" />
-                      <span>{txHistory.length > 0 ? `+${Math.round((txHistory[txHistory.length-1].transactions / txHistory[0].transactions - 1) * 100)}%` : '0%'}</span>
+                      <span>
+                        {data?.historicalActivity && data.historicalActivity.length > 0 
+                          ? `+${Math.round((data.historicalActivity[data.historicalActivity.length-1].transactions / data.historicalActivity[0].transactions - 1) * 100)}%` 
+                          : '0%'}
+                      </span>
                     </div>
                   </div>
 
                   <div className="h-20 flex items-end space-x-1">
-                    {txHistory.map((day, index) => (
+                    {data?.historicalActivity.map((day, index) => (
                       <div key={index} className="flex-1 group relative">
                         <div className="bg-[#2A4E76]/50 hover:bg-[#2A4E76]/80 rounded-sm transition-all" style={{ height: `${Math.max(4, (day.transactions / 5000) * 100)}%` }}></div>
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
