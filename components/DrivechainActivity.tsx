@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Network, Layers, ChevronRight, ArrowUpRight, Activity, Server, Users } from 'lucide-react';
+import { Network, ChevronRight, ArrowUpRight, Activity, Server, Users } from 'lucide-react';
 import { getDrivechainStats, getDrivechainTransactionHistory } from '@/app/lib/drivechain';
 
 interface Drivechain {
@@ -17,13 +17,18 @@ interface Drivechain {
   description?: string;
 }
 
+interface DrivechainStats {
+  totalActiveDrivechains: number;
+  drivechains: Drivechain[];
+}
+
 interface DrivechainActivityProps {
   compact?: boolean;
 }
 
 export default function DrivechainActivity({ compact = false }: DrivechainActivityProps) {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DrivechainStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedDrivechain, setSelectedDrivechain] = useState<Drivechain | null>(null);
   const [showDetails, setShowDetails] = useState(false);
@@ -107,7 +112,7 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6 relative">
-              {data.drivechains.filter((dc: Drivechain) => dc.status === 'active').map((chain: Drivechain) => (
+              {data!.drivechains.filter((dc: Drivechain) => dc.status === 'active').map((chain: Drivechain) => (
                 <div 
                   key={chain.id}
                   onClick={() => handleDrivechainSelect(chain)}
