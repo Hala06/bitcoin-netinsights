@@ -1,300 +1,565 @@
 'use client';
 
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { useEffect, useRef, useState, Suspense } from 'react';
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import Navbar from '../../components/Navbar';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
-import { ArrowRight, ChevronRight, Download, GitBranch, Globe, HardDrive, Layers, ScrollText } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Activity, ArrowRight, BarChart2, Database, Globe, Bitcoin } from 'lucide-react';
+import FeatureCard from '@/app/components/FeatureCard';
+import BitcoinModel from '@/components/BitcoinModel';
 
-// Dynamically import the 3D model with SSR disabled
-const BitcoinModel = dynamic(() => import('../../components/BitcoinModel'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  ),
-});
+export default function OnboardingPage() {
+  const { theme } = useTheme();
+  const router = useRouter();
+  const [activeFeature, setActiveFeature] = useState<string | null>(null);
+  const [showFeatures, setShowFeatures] = useState(false);
+  const [anyCardExpanded, setAnyCardExpanded] = useState(false);
+  
+  // Map of feature titles to background color gradients
+  const featureBackgroundColors = {
+    "Mempool Congestion": {
+      base: theme === 'dark' ? "#22c55e" : "#166534", // Green
+      backgroundFrom: "rgba(16, 185, 129, 0.15)",
+      backgroundTo: "rgba(5, 150, 105, 0.05)"
+    },
+    "OP_Return Tracker": {
+      base: theme === 'dark' ? "#f43f5e" : "#be123c", // Red
+      backgroundFrom: "rgba(244, 63, 94, 0.15)",
+      backgroundTo: "rgba(190, 18, 60, 0.05)"
+    },
+    "Drivechain Activity": {
+      base: theme === 'dark' ? "#3b82f6" : "#1d4ed8", // Blue
+      backgroundFrom: "rgba(59, 130, 246, 0.15)",
+      backgroundTo: "rgba(29, 78, 216, 0.05)"
+    },
+    "Memecoin Tracker": {
+      base: theme === 'dark' ? "#d946ef" : "#a21caf", // Purple
+      backgroundFrom: "rgba(217, 70, 239, 0.15)",
+      backgroundTo: "rgba(162, 28, 175, 0.05)"
+    },
+    "3D Bitcoin Visualization": {
+      base: theme === 'dark' ? "#f7931a" : "#b45309", // Bitcoin Orange
+      backgroundFrom: "rgba(247, 147, 26, 0.15)",
+      backgroundTo: "rgba(180, 83, 9, 0.05)"
+    }
+  };
+  
+  const features = [
+    {
+      title: "Mempool Congestion",
+      description: "Track Bitcoin network congestion and transaction fees in real-time",
+      icon: <BarChart2 className="w-6 h-6" />,
+      color: theme === 'dark' ? "#22c55e" : "#166534",
+      bgImage: "/Mempool Congestion.jpg",
+      content: (
+        <div className="space-y-8">
+          <motion.p 
+            className="text-lg text-gray-200 max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            Our mempool congestion tracker provides real-time data on Bitcoin network load, helping you time your transactions for optimal fees and confirmation times.
+          </motion.p>
+          
+          <motion.div
+            className="mt-8 rounded-xl overflow-hidden shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <img 
+              src="/mempool.jpg" 
+              alt="Mempool Congestion Analytics" 
+              className="w-full h-auto rounded-xl" 
+            />
+          </motion.div>
+          
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-green-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-green-400">Real-time Fee Estimation</h3>
+              <p className="text-gray-300">Know exactly what fee to pay for your desired confirmation time</p>
+            </div>
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-green-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-green-400">Historical Trends</h3>
+              <p className="text-gray-300">View patterns to identify optimal transaction windows</p>
+            </div>
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-green-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-green-400">Block Fullness</h3>
+              <p className="text-gray-300">Track how much of each block is being utilized</p>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-10 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <button
+              onClick={() => router.push('/login')}
+              className="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 text-white py-3 px-8 rounded-lg flex items-center font-medium transition-all duration-300"
+            >
+              Explore Mempool Data <ArrowRight className="ml-2 h-4 w-4" />
+            </button>
+          </motion.div>
+        </div>
+      )
+    },
+    {
+      title: "OP_Return Tracker",
+      description: "Monitor data storage trends on the Bitcoin blockchain",
+      icon: <Database className="w-6 h-6" />,
+      color: theme === 'dark' ? "#f43f5e" : "#be123c",
+      bgImage: "/OP_Return Data Storage.jpg",
+      content: (
+        <div className="space-y-8">
+          <motion.p 
+            className="text-lg text-gray-200 max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            Track how OP_Return data is being used on the Bitcoin blockchain, with real-time metrics on percentage of block space, transaction counts, and content types.
+          </motion.p>
+          
+          <motion.div
+            className="mt-8 rounded-xl overflow-hidden shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <img 
+              src="/opreturn.jpg" 
+              alt="OP_Return Data Analytics" 
+              className="w-full h-auto rounded-xl" 
+            />
+          </motion.div>
+          
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-red-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-red-400">Data Composition</h3>
+              <p className="text-gray-300">Analyze what types of data are being stored</p>
+            </div>
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-red-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-red-400">Historical Usage</h3>
+              <p className="text-gray-300">Track OP_Return usage over time to spot trends</p>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-10 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <button
+              onClick={() => router.push('/login')}
+              className="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white py-3 px-8 rounded-lg flex items-center font-medium transition-all duration-300"
+            >
+              Explore OP_Return Data <ArrowRight className="ml-2 h-4 w-4" />
+            </button>
+          </motion.div>
+        </div>
+      )
+    },
+    {
+      title: "Drivechain Activity",
+      description: "Explore Layer 2 sidechain usage and performance",
+      icon: <Activity className="w-6 h-6" />,
+      color: theme === 'dark' ? "#3b82f6" : "#1d4ed8",
+      bgImage: "/drivechain.jpg",
+      content: (
+        <div className="space-y-8">
+          <motion.p 
+            className="text-lg text-gray-200 max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            Monitor the activity and performance of Bitcoin Layer 2 solutions like drivechains, including transaction volumes, user counts, and network health.
+          </motion.p>
+          
+          <motion.div
+            className="mt-8 rounded-xl overflow-hidden shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <img 
+              src="/drivechain.jpg" 
+              alt="Drivechain Activity Dashboard" 
+              className="w-full h-auto rounded-xl" 
+            />
+          </motion.div>
+          
+          <motion.div
+            className="mt-8 bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-blue-500/20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <h3 className="text-xl font-semibold mb-2 text-blue-400">Active Sidechains</h3>
+                <p className="text-5xl font-bold text-white">12</p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2 text-blue-400">Total TPS</h3>
+                <p className="text-5xl font-bold text-white">138</p>
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2 text-blue-400">Active Users</h3>
+                <p className="text-5xl font-bold text-white">45K+</p>
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-10 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <button
+              onClick={() => router.push('/login')}
+              className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 text-white py-3 px-8 rounded-lg flex items-center font-medium transition-all duration-300"
+            >
+              Explore Drivechain Data <ArrowRight className="ml-2 h-4 w-4" />
+            </button>
+          </motion.div>
+        </div>
+      )
+    },
+    {
+      title: "Memecoin Tracker",
+      description: "Follow BRC-20 token creation and trading activity",
+      icon: <Bitcoin className="w-6 h-6" />,
+      color: theme === 'dark' ? "#d946ef" : "#a21caf",
+      bgImage: "/Memecoin Tracker.jpg",
+      content: (
+        <div className="space-y-8">
+          <motion.p 
+            className="text-lg text-gray-200 max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            Stay updated on the latest memecoins and BRC-20 tokens being created on Bitcoin, with metrics on trading volume, new token creation, and market activity.
+          </motion.p>
+          
+          <motion.div
+            className="mt-8 rounded-xl overflow-hidden shadow-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <img 
+              src="/Memecoin Tracker.jpg" 
+              alt="Memecoin Tracker" 
+              className="w-full h-auto rounded-xl" 
+            />
+          </motion.div>
+          
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-purple-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-purple-400">Creation Trends</h3>
+              <p className="text-gray-300">Track new memecoin launches and their initial popularity</p>
+            </div>
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-purple-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-purple-400">Volume Analysis</h3>
+              <p className="text-gray-300">Monitor trading volumes and price movements</p>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-10 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <button
+              onClick={() => router.push('/login')}
+              className="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 text-white py-3 px-8 rounded-lg flex items-center font-medium transition-all duration-300"
+            >
+              Explore Memecoin Data <ArrowRight className="ml-2 h-4 w-4" />
+            </button>
+          </motion.div>
+        </div>
+      )
+    },
+    {
+      title: "3D Bitcoin Visualization",
+      description: "Interactive 3D model of Bitcoin network activity",
+      icon: <Globe className="w-6 h-6" />,
+      color: theme === 'dark' ? "#f7931a" : "#b45309",
+      bgImage: "/Bitcoin 3D Model.jpg",
+      content: (
+        <div className="space-y-8">
+          <motion.p 
+            className="text-lg text-gray-200 max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            Explore Bitcoin in a whole new way with our interactive 3D visualization, showing network activity, node distribution, and blockchain growth in real-time.
+          </motion.p>
+          
+          <motion.div
+            className="mt-8 h-[400px] flex items-center justify-center rounded-xl overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <BitcoinModel />
+          </motion.div>
+          
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-orange-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-orange-400">Block Explorer</h3>
+              <p className="text-gray-300">Visualize blocks in 3D space as they're added to the blockchain</p>
+            </div>
+            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-orange-500/20">
+              <h3 className="text-xl font-semibold mb-2 text-orange-400">Network Topology</h3>
+              <p className="text-gray-300">See Bitcoin's global node distribution and connection patterns</p>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="mt-10 flex justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <button
+              onClick={() => router.push('/login')}
+              className="bg-gradient-to-r from-orange-600 to-orange-800 hover:from-orange-500 hover:to-orange-700 text-white py-3 px-8 rounded-lg flex items-center font-medium transition-all duration-300"
+            >
+              Explore 3D Visualization <ArrowRight className="ml-2 h-4 w-4" />
+            </button>
+          </motion.div>
+        </div>
+      )
+    },
+  ];
 
-const features = [
-  {
-    title: 'Mempool Analytics',
-    icon: <Layers className="w-6 h-6" />,
-    description: 'Real-time congestion monitoring with fee predictions',
-    colorLight: '#3B82F6',
-    colorDark: '#60A5FA',
-    image: '/mempool.jpg'
-  },
-  {
-    title: 'OP_Return Tracking',
-    icon: <ScrollText className="w-6 h-6" />,
-    description: 'Measure on-chain data storage and its impact',
-    colorLight: '#EC4899',
-    colorDark: '#F472B6',
-    image: '/opreturn.jpg'
-  },
-  {
-    title: 'Drivechain Metrics',
-    icon: <GitBranch className="w-6 h-6" />,
-    description: 'Layer 2 adoption and performance statistics',
-    colorLight: '#10B981',
-    colorDark: '#34D399',
-    image: '/drivechain.jpg'
-  }
-];
-
-const stats = [
-  { value: '24/7', label: 'Real-time monitoring' },
-  { value: '99.9%', label: 'Uptime reliability' },
-  { value: '150+', label: 'Network metrics' },
-  { value: '0', label: 'Bias or opinions' }
-];
-
-export default function Onboarding() {
-  const { theme, setTheme } = useTheme();
-  const containerRef = useRef(null);
-  const [mounted, setMounted] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(0);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end']
-  });
-
-  // Handle hydration
+  // Show features with a delay after page load
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setShowFeatures(true);
+    }, 800);
+    return () => clearTimeout(timer);
   }, []);
+  
+  // Handle card expansion
+  const handleFeatureExpand = (expanded: boolean, title: string) => {
+    setActiveFeature(expanded ? title : null);
+    setAnyCardExpanded(expanded);
+    
+    // Add ESC key listener when a card is expanded
+    if (expanded) {
+      const handleEscKey = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          setActiveFeature(null);
+          setAnyCardExpanded(false);
+        }
+      };
+      
+      window.addEventListener('keydown', handleEscKey);
+      return () => window.removeEventListener('keydown', handleEscKey);
+    }
+  };
 
-  // Auto-rotate features
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % features.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Parallax effects
-  const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.1], [1, 1.1]);
-
-  if (!mounted) {
-    return null;
-  }
+  // Calculate the background style based on active feature
+  const getBackgroundStyle = () => {
+    if (!activeFeature) {
+      return {
+        background: `radial-gradient(circle at top right, rgba(13, 27, 42, 0.9), rgba(18, 18, 18, 0.95))`
+      };
+    }
+    
+    const colors = featureBackgroundColors[activeFeature as keyof typeof featureBackgroundColors];
+    return {
+      background: `radial-gradient(circle at top right, ${colors.backgroundFrom}, ${colors.backgroundTo})`
+    };
+  };
 
   return (
-    <div 
-      ref={containerRef}
-      className="min-h-screen bg-white dark:bg-[#0A0A0A] text-[#121212] dark:text-[#FAFAFA] transition-colors duration-300"
-    >
-      <Navbar />
+    <main className="min-h-screen relative overflow-hidden">
+      {/* Dynamic background that changes based on active feature */}
+      <motion.div 
+        className="fixed inset-0 -z-10 transition-colors duration-1000 ease-in-out"
+        animate={getBackgroundStyle()}
+      />
+      
+      {/* Animated particles in background */}
+      {showFeatures && (
+        <div className="fixed inset-0 -z-5 overflow-hidden">
+          {Array.from({ length: 50 }).map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-white/5"
+              style={{
+                width: Math.random() * 4 + 1,
+                height: Math.random() * 4 + 1,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                x: [0, Math.random() * 100 - 50],
+                y: [0, Math.random() * 100 - 50],
+                opacity: [0, 0.5, 0],
+              }}
+              transition={{
+                duration: Math.random() * 20 + 10,
+                repeat: Infinity,
+                delay: Math.random() * 5,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Hero Section */}
-      <section className="min-h-screen relative overflow-hidden flex items-center justify-center pt-16">
-        {/* Background elements */}
-        <motion.div 
-          style={{ y, opacity, scale }}
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        >
-          <div className="absolute w-[800px] h-[800px] bg-blue-500/10 dark:bg-blue-500/20 blur-[120px] rounded-full" />
-        </motion.div>
-
-        <div className="container mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-12 z-10">
-          {/* Left content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="lg:w-1/2 space-y-8"
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-                Bitcoin Network Intelligence
-              </span>
-              <br />
-              <span className="text-gray-600 dark:text-gray-300">Without the noise</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl">
-              Unbiased, real-time data about Bitcoin's base layer and emerging Layer 2 solutions.
-              Built for developers, analysts, and the Bitcoin-curious.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/dashboard"
-                className="px-8 py-4 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                Launch Dashboard
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link
-                href="#features"
-                className="px-8 py-4 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
-              >
-                Learn More
-                <ChevronRight className="w-5 h-5" />
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm"
-                >
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stat.value}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* 3D Model */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="lg:w-1/2 h-[400px] lg:h-[500px] relative"
-          >
-            <Suspense fallback={
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
+      <section className="py-24 relative">
+        <div className="container mx-auto px-6 relative z-20">
+          <div className="flex flex-col items-center text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, type: "spring" }}
+            >
+              <div className="inline-block mb-6">
+                <BitcoinModel height={160} width={160} />
               </div>
-            }>
-              <BitcoinModel />
-            </Suspense>
-          </motion.div>
+            </motion.div>
+            
+            <motion.h1
+              className="text-4xl md:text-6xl font-bold text-white mb-6"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Bitcoin <span className="text-[#B3261E]">NetInsights</span>
+            </motion.h1>
+            
+            <motion.p
+              className="text-xl text-gray-300 max-w-2xl mb-10"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Real-time transparency on Bitcoin's network activity, from Layer 1 to emerging sidechains.
+              A neutral data platform for all Bitcoin stakeholders.
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <button
+                onClick={() => router.push('/login')}
+                className={`inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#B3261E] to-[#660000] text-white font-medium rounded-lg hover:from-[#C04A44] hover:to-[#802A2A] transition-all duration-300 ${
+                  anyCardExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}
+              >
+                Launch Dashboard <ArrowRight className="ml-2 w-5 h-5" />
+              </button>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20">
+      {/* Features Grid Section */}
+      <section className="py-16 relative z-20">
         <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
+          <motion.h2
+            className={`text-3xl font-bold text-white mb-12 text-center transition-opacity duration-500 ${
+              anyCardExpanded ? 'opacity-0' : 'opacity-100'
+            }`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: showFeatures ? 1 : 0, y: showFeatures ? 0 : 20 }}
+            transition={{ duration: 0.5 }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Comprehensive Network Insights</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Everything you need to understand Bitcoin's network activity in one dashboard
-            </p>
-          </motion.div>
-
-          {/* Feature Tabs */}
-          <div className="flex justify-center mb-12">
-            <div className="inline-flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-              {features.map((feature, index) => (
-                <button
-                  key={feature.title}
-                  onClick={() => setActiveFeature(index)}
-                  className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeFeature === index ? 'bg-white dark:bg-gray-700 shadow-sm' : 'text-gray-600 dark:text-gray-400'
-                  }`}
-                >
-                  {feature.title}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Feature Content */}
-          <div className="relative h-[600px] rounded-2xl overflow-hidden">
-            <AnimatePresence mode="wait">
-              {features.map((feature, index) => (
-                activeFeature === index && (
-                  <motion.div
-                    key={feature.title}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute inset-0 flex items-center justify-center"
-                    style={{
-                      backgroundColor: theme === 'dark' 
-                        ? `${feature.colorDark}10` 
-                        : `${feature.colorLight}10`
-                    }}
-                  >
-                    <div className="container mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
-                      <motion.div
-                        initial={{ opacity: 0, x: -50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2, duration: 0.6 }}
-                        className="lg:w-1/2 space-y-6"
-                      >
-                        <div 
-                          className="w-12 h-12 rounded-full flex items-center justify-center"
-                          style={{ 
-                            backgroundColor: theme === 'dark' 
-                              ? `${feature.colorDark}20` 
-                              : `${feature.colorLight}20`,
-                            color: theme === 'dark' 
-                              ? feature.colorDark 
-                              : feature.colorLight
-                          }}
-                        >
-                          {feature.icon}
-                        </div>
-                        <h3 className="text-2xl md:text-3xl font-bold">{feature.title}</h3>
-                        <p className="text-lg text-gray-600 dark:text-gray-300">{feature.description}</p>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4, duration: 0.6 }}
-                        className="lg:w-1/2 h-[400px] bg-gray-100 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden relative"
-                      >
-                        <img 
-                          src={feature.image}
-                          alt={feature.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                )
-              ))}
-            </AnimatePresence>
+            Explore Our Features
+          </motion.h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                  opacity: showFeatures ? 1 : 0, 
+                  y: showFeatures ? 0 : 20,
+                  scale: activeFeature && activeFeature !== feature.title ? 0.95 : 1,
+                  filter: activeFeature && activeFeature !== feature.title ? 'blur(2px)' : 'blur(0px)'
+                }}
+                transition={{ 
+                  duration: 0.5, 
+                  delay: showFeatures ? index * 0.1 : 0,
+                }}
+                className={`transition-all duration-700 ${
+                  activeFeature && activeFeature !== feature.title ? 'opacity-30' : 'opacity-100'
+                }`}
+              >
+                <FeatureCard 
+                  {...feature} 
+                  index={index}
+                  onExpand={handleFeatureExpand}
+                />
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 text-white">
+      <section 
+        className={`py-32 bg-gradient-to-r from-[#002B5B] to-[#660000] text-white relative z-20 transition-opacity duration-500 ${
+          anyCardExpanded ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
         <div className="container mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            animate={{ opacity: showFeatures ? 1 : 0, y: showFeatures ? 0 : 30 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
           >
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to explore Bitcoin's network?</h2>
-            <p className="text-xl mb-12 max-w-3xl mx-auto">
-              Get started with the most comprehensive Bitcoin network analytics platform
+            <h2 className="text-4xl font-bold mb-6">Ready to Gain Bitcoin Network Insights?</h2>
+            <p className="text-xl text-gray-200 mb-10 max-w-2xl mx-auto">
+              Whether you're a Bitcoin purist or building on its future, get the neutral data you need to make informed decisions.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/dashboard"
-                className="px-8 py-4 bg-white text-blue-600 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-lg flex items-center justify-center gap-2"
-              >
-                Launch Dashboard
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
+            <button
+              onClick={() => router.push('/login')}
+              className="inline-flex items-center px-8 py-4 bg-white text-[#121212] font-bold rounded-lg hover:bg-gray-100 transition-all duration-300"
+            >
+              Sign In Now <ArrowRight className="ml-2 w-5 h-5" />
+            </button>
           </motion.div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }

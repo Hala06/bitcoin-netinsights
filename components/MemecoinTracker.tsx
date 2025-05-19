@@ -1,195 +1,362 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Bitcoin, Coins, TrendingUp, Zap } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Bitcoin, TrendingUp, TrendingDown, Info, ChevronRight } from 'lucide-react';
+import { getMemecoinsActivity, getTokenCreationHistory, TokenInfo, MemeTokenEvent } from '@/app/lib/memecoin';
 
-const memecoinTypes = [
-  { name: 'Runes', icon: <Bitcoin className="w-5 h-5" />, activity: 45 },
-  { name: 'Ordinals', icon: <Coins className="w-5 h-5" />, activity: 38 },
-  { name: 'BRC-20', icon: <TrendingUp className="w-5 h-5" />, activity: 32 },
-  { name: 'Others', icon: <Zap className="w-5 h-5" />, activity: 15 }
-]
+interface MemecoinTrackerProps {
+  compact?: boolean;
+}
 
-export default function MemecoinTracker({ compact = false }: { compact?: boolean }) {
-  const [memecoinData, setMemecoinData] = useState({
-    totalTransactions: 124578,
-    newTokens: 245,
-    volume: 124.5, // BTC
-    activityChange: 12.4 // %
-  })
+export default function MemecoinTracker({ compact = false }: MemecoinTrackerProps) {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+  const [historyData, setHistoryData] = useState<{date: string, count: number}[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedToken, setSelectedToken] = useState<string | null>(null);
 
-  // Simulate data fetch
   useEffect(() => {
-    const interval = setInterval(() => {
-      setMemecoinData(prev => ({
-        totalTransactions: prev.totalTransactions + Math.floor(Math.random() * 1000),
-        newTokens: prev.newTokens + Math.floor(Math.random() * 10),
-        volume: prev.volume + (Math.random() * 5 - 2.5),
-        activityChange: prev.activityChange + (Math.random() * 2 - 1)
-      }))
-    }, 10000)
-    return () => clearInterval(interval)
-  }, [])
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [tokenData, creationHistory] = await Promise.all([
+          getMemecoinsActivity(),
+          getTokenCreationHistory()
+        ]);
+        setData(tokenData);
+        setHistoryData(creationHistory.map(day => ({ date: day.date, count: day.tokensCreated })));
+        
+        // Select first token by default
+        if (tokenData.length > 0 && !selectedToken) {
+          setSelectedToken(tokenData[0].token);
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching memecoin data:', err);
+        setError('Failed to load memecoin data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+    
+    // Set up automatic refresh interval
+    const intervalId = setInterval(fetchData, 60000); // refresh every minute
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Function to format numbers with K, M, B suffixes
+  const formatNumber = (num: number): string => {
+    if (num >= 1000000000) {
+      return (num / 1000000000).toFixed(1) + 'B';
+    }
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+  
+  // Get the details of the selected token
+  const getSelectedTokenDetails = (): TokenInfo | null => {
+    if (!data || !selectedToken) return null;
+    
+    return data.top10Tokens.find((token: TokenInfo) => token.ticker === selectedToken) || null;
+  };
+  
+  const selectedTokenDetails = getSelectedTokenDetails();
+
+  if (compact) {
+    return (
+      <motion.div 
+        className="bg-[#0D1B2A]/80 backdrop-blur-md rounded-xl border border-gray-800 overflow-hidden shadow-lg h-full"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white flex items-center">
+              <Bitcoin className="mr-2 text-[#C04A44]" size={18} />
+              Memecoin Activity
+            </h3>
+          </div>
+          
+          {loading ? (
+            <div className="flex items-center justify-center h-20">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#C04A44]"></div>
+            </div>
+          ) : error ? (
+            <div className="text-red-500 text-center py-4">{error}</div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-gray-800/40 rounded-lg p-3">
+                <p className="text-gray-400 text-xs mb-1">Total Tokens</p>
+                <p className="text-white text-xl font-bold">{data?.totalTokens}</p>
+              </div>
+              <div className="bg-gray-800/40 rounded-lg p-3">
+                <p className="text-gray-400 text-xs mb-1">Daily Txs</p>
+                <p className="text-white text-xl font-bold">{formatNumber(data?.dailyTransactions)}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
-    <div>
-      {compact ? (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bitcoin className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm font-medium">Memecoin Activity</span>
-            </div>
-            <span className="text-sm font-medium">
-              {memecoinData.activityChange > 0 ? '+' : ''}{memecoinData.activityChange.toFixed(1)}%
+    <motion.div 
+      className="bg-[#0D1B2A]/80 backdrop-blur-md rounded-xl border border-gray-800 overflow-hidden shadow-lg"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.3 }}
+    >
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-semibold text-white flex items-center">
+            <Bitcoin className="mr-2 text-[#C04A44]" />
+            BRC-20 Token Tracker
+          </h3>
+          {data && (
+            <span className="px-3 py-1 text-sm bg-[#C04A44]/20 text-[#F18D86] rounded-full">
+              {data.totalTokens} Tokens
             </span>
-          </div>
-          
-          <div className="grid grid-cols-4 gap-2">
-            {memecoinTypes.map((type, index) => (
-              <motion.div
-                key={type.name}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex flex-col items-center"
-              >
-                <div className="w-8 h-8 flex items-center justify-center bg-yellow-500/10 rounded-full text-yellow-500">
-                  {type.icon}
-                </div>
-                <span className="text-xs mt-1">{type.name}</span>
-              </motion.div>
-            ))}
-          </div>
-          
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            {memecoinData.totalTransactions.toLocaleString()} total transactions
-          </div>
+          )}
         </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Total Transactions</h3>
-              <div className="flex items-end gap-1">
-                <span className="text-2xl font-bold">{memecoinData.totalTransactions.toLocaleString()}</span>
-              </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Across all memecoin types
-              </p>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">New Tokens</h3>
-              <div className="flex items-end gap-1">
-                <span className="text-2xl font-bold">+{memecoinData.newTokens}</span>
-              </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Created in last 24 hours
-              </p>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Trading Volume</h3>
-              <div className="flex items-end gap-1">
-                <span className="text-2xl font-bold">{memecoinData.volume.toFixed(1)}</span>
-                <span className="text-gray-500 dark:text-gray-400 mb-1">BTC</span>
-              </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Last 24 hours
-              </p>
-            </div>
-            
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Activity Change</h3>
-              <div className="flex items-end gap-1">
-                <span className={`text-2xl font-bold ${
-                  memecoinData.activityChange > 0 ? 'text-green-500' : 'text-red-500'
-                }`}>
-                  {memecoinData.activityChange > 0 ? '+' : ''}{memecoinData.activityChange.toFixed(1)}%
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                From yesterday
-              </p>
-            </div>
+        
+        {loading ? (
+          <div className="flex items-center justify-center h-40">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#C04A44]"></div>
           </div>
-          
-          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">Distribution by Type</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {memecoinTypes.map((type) => (
-                <div key={type.name} className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 flex items-center justify-center bg-yellow-500/10 rounded-full text-yellow-500">
-                      {type.icon}
+        ) : error ? (
+          <div className="text-red-500 text-center py-8">{error}</div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {/* Top Tokens Table */}
+              <div className="md:col-span-2 bg-gray-800/40 rounded-lg p-4">
+                <h4 className="text-white font-medium mb-3">Top Tokens by Volume</h4>
+                
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="text-gray-400 border-b border-gray-700">
+                        <th className="text-left py-2">Token</th>
+                        <th className="text-right py-2">Price (BTC)</th>
+                        <th className="text-right py-2">24h</th>
+                        <th className="text-right py-2">Volume</th>
+                        <th className="text-right py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.map((token: MemeTokenEvent, index: number) => (
+                        <tr 
+                          key={token.ticker} 
+                          className={`border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors ${
+                            selectedToken === token.ticker ? 'bg-[#C04A44]/10' : ''
+                          }`}
+                          onClick={() => setSelectedToken(token.ticker)}
+                        >
+                          <td className="py-3 flex items-center">
+                            <div className="w-6 h-6 bg-[#C04A44]/20 rounded-full flex items-center justify-center text-xs text-[#F18D86] font-mono mr-2">
+                              {token.ticker.substring(0, 1)}
+                            </div>
+                            <span className="font-medium text-white">{token.ticker}</span>
+                          </td>
+                          <td className="text-right font-mono text-white">
+                            {token.priceInBTC?.toFixed(10)}
+                          </td>
+                          <td className={`text-right ${token.changePercent24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            <div className="flex items-center justify-end">
+                              {token.changePercent24h >= 0 ? (
+                                <TrendingUp size={14} className="mr-1" />
+                              ) : (
+                                <TrendingDown size={14} className="mr-1" />
+                              )}
+                              {token.changePercent24h >= 0 ? '+' : ''}{token.changePercent24h.toFixed(2)}%
+                            </div>
+                          </td>
+                          <td className="text-right text-gray-300">
+                            {token.volume24h.toFixed(2)} BTC
+                          </td>
+                          <td className="text-right">
+                            <button 
+                              className="text-gray-400 hover:text-white"
+                              onClick={() => setSelectedToken(token.ticker)}
+                            >
+                              <ChevronRight size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              {/* Token Details */}
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                {selectedTokenDetails ? (
+                  <div>
+                    <div className="flex items-center mb-4">
+                      <div className="w-10 h-10 bg-[#C04A44]/30 rounded-full flex items-center justify-center text-lg text-[#F18D86] font-mono mr-3">
+                        {selectedTokenDetails.ticker.substring(0, 1)}
+                      </div>
+                      <div>
+                        <h3 className="text-white text-lg font-medium">{selectedTokenDetails.ticker}</h3>
+                        <p className="text-gray-400 text-xs">{selectedTokenDetails.name}</p>
+                      </div>
                     </div>
-                    <span className="font-medium">{type.name}</span>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-gray-400 text-xs mb-1">Price</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-white text-xl font-mono">{selectedTokenDetails.priceInBTC?.toFixed(10)} BTC</p>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            selectedTokenDetails.changePercent24h >= 0 
+                              ? 'bg-green-500/20 text-green-400' 
+                              : 'bg-red-500/20 text-red-400'
+                          }`}>
+                            {selectedTokenDetails.changePercent24h >= 0 ? '+' : ''}{selectedTokenDetails.changePercent24h.toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <p className="text-gray-400 text-xs">Market Cap</p>
+                          <p className="text-white text-sm">
+                            {selectedTokenDetails.marketCapInBTC?.toFixed(2)} BTC
+                          </p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-gray-400 text-xs">Holders</p>
+                          <p className="text-white text-sm">
+                            {selectedTokenDetails.holders.toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-gray-400 text-xs">Supply</p>
+                          <p className="text-white text-sm">
+                            {formatNumber(selectedTokenDetails.totalSupply)}
+                          </p>
+                        </div>
+                        <div className="flex justify-between">
+                          <p className="text-gray-400 text-xs">Deployment Block</p>
+                          <p className="text-white text-sm">
+                            {selectedTokenDetails.deploymentBlock.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4 border-t border-gray-700">
+                        <div className="flex justify-between items-center mb-2">
+                          <p className="text-gray-400 text-xs">24h Volume</p>
+                          <p className="text-white text-sm font-medium">
+                            {selectedTokenDetails.volume24h.toFixed(2)} BTC
+                          </p>
+                        </div>
+                        <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-[#C04A44] to-[#F18D86]" 
+                            style={{ width: `${Math.min(100, selectedTokenDetails.volume24h * 2)}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 text-right">
+                          {Math.min(100, Math.round(selectedTokenDetails.volume24h * 2))}% of max volume
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-yellow-500" 
-                      style={{ width: `${type.activity}%` }}
-                    />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-400 text-sm">Select a token to view details</p>
                   </div>
-                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    {type.activity}% of total activity
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">Last 24 Hours Activity</h3>
-            <div className="h-64">
-              {/* Placeholder for chart - implement with your preferred charting library */}
-              <div className="w-full h-full bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center text-gray-500 dark:text-gray-400">
-                Memecoin activity history chart
+                )}
               </div>
             </div>
-          </div>
-          
-          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">Top Performing Memecoins</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                    <th className="pb-2">Name</th>
-                    <th className="pb-2">Type</th>
-                    <th className="pb-2 text-right">Transactions</th>
-                    <th className="pb-2 text-right">Volume (BTC)</th>
-                    <th className="pb-2 text-right">Change (24h)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { name: 'DOG•GO•TO•THE•MOON', type: 'Runes', transactions: 12457, volume: 24.5, change: 12.4 },
-                    { name: 'PUPS', type: 'Ordinals', transactions: 9872, volume: 18.7, change: 8.2 },
-                    { name: 'ORDI', type: 'BRC-20', transactions: 8765, volume: 15.2, change: -3.1 },
-                    { name: 'RSIC', type: 'Runes', transactions: 7654, volume: 12.8, change: 5.7 },
-                    { name: 'MEME', type: 'BRC-20', transactions: 6543, volume: 10.1, change: -1.2 }
-                  ].map((coin, index) => (
-                    <tr key={coin.name} className="border-b border-gray-200 dark:border-gray-600">
-                      <td className="py-3 font-medium">{coin.name}</td>
-                      <td className="py-3 text-sm text-gray-500 dark:text-gray-400">{coin.type}</td>
-                      <td className="py-3 text-right">{coin.transactions.toLocaleString()}</td>
-                      <td className="py-3 text-right">{coin.volume.toFixed(1)}</td>
-                      <td className={`py-3 text-right ${
-                        coin.change > 0 ? 'text-green-500' : 'text-red-500'
-                      }`}>
-                        {coin.change > 0 ? '+' : ''}{coin.change}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            
+            {/* Bottom Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-gray-400 text-xs">Total Tokens</p>
+                  <Info size={14} className="text-gray-500" />
+                </div>
+                <p className="text-white text-2xl font-bold">{formatNumber(data.totalTokens)}</p>
+              </div>
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-gray-400 text-xs">Unique Holders</p>
+                  <Info size={14} className="text-gray-500" />
+                </div>
+                <p className="text-white text-2xl font-bold">{formatNumber(data.uniqueHolders)}</p>
+              </div>
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-gray-400 text-xs">Daily Transactions</p>
+                  <Info size={14} className="text-gray-500" />
+                </div>
+                <p className="text-white text-2xl font-bold">{formatNumber(data.dailyTransactions)}</p>
+              </div>
+              <div className="bg-gray-800/40 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-gray-400 text-xs">Recently Created</p>
+                  <Info size={14} className="text-gray-500" />
+                </div>
+                <p className="text-white text-2xl font-bold">
+                  {historyData.length > 0 ? 
+                    formatNumber(historyData.slice(-7).reduce((sum, day) => sum + day.count, 0)) : '0'}
+                </p>
+                <p className="text-xs text-gray-400">last 7 days</p>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
+            
+            {/* Token Creation History Chart */}
+            <div className="bg-gray-800/40 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-3">Token Creation History (90d)</h4>
+              <div className="h-40 flex items-end space-x-0.5">
+                {historyData.map((day, index) => (
+                  <div 
+                    key={index} 
+                    className="flex-1 group relative"
+                  >
+                    <div 
+                      className={`bg-[#C04A44]/50 hover:bg-[#C04A44]/80 rounded-sm transition-all ${
+                        index % 7 === 0 ? 'border-l border-gray-500/30' : ''
+                      }`}
+                      style={{ 
+                        height: `${Math.max(4, (day.count / 30) * 100)}%`,
+                      }}
+                    ></div>
+                    
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                      {day.date}: {day.count} new tokens
+                    </div>
+                    
+                    {/* Date markers (only show every 15 days) */}
+                    {index % 15 === 0 && (
+                      <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 text-xs text-gray-500">
+                        {day.date.slice(-5)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="h-6"></div> {/* Space for date markers */}
+            </div>
+          </>
+        )}
+      </div>
+    </motion.div>
+  );
 }
