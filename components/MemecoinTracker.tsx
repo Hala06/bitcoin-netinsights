@@ -28,8 +28,8 @@ export default function MemecoinTracker({ compact = false }: MemecoinTrackerProp
         setHistoryData(creationHistory.map(day => ({ date: day.date, count: day.tokensCreated })));
         
         // Select first token by default
-        if (tokenData.length > 0 && !selectedToken) {
-          setSelectedToken(tokenData[0].token);
+        if (tokenData.top10Tokens.length > 0 && !selectedToken) {
+          setSelectedToken(tokenData.top10Tokens[0].ticker);
         }
         
         setError(null);
@@ -156,7 +156,7 @@ export default function MemecoinTracker({ compact = false }: MemecoinTrackerProp
                       </tr>
                     </thead>
                     <tbody>
-                      {data.map((token: MemeTokenEvent, index: number) => (
+                      {data.top10Tokens.map((token: TokenInfo) => (
                         <tr 
                           key={token.ticker} 
                           className={`border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors ${
