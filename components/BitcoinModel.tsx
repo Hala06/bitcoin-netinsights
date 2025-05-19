@@ -75,7 +75,7 @@ export default function BitcoinModel({
             enableZoom={false}
             autoRotate={false}
           />
-          <Environment preset="city" />
+          <Environment preset="sunset" />
         </Canvas>
       </motion.div>
     </div>
