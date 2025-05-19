@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import { OrbitControls, Environment } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, Environment, useGLTF } from '@react-three/drei';
 import { motion } from 'framer-motion';
 
 function Model({ spinning = true }) {
   const modelRef = useRef<THREE.Mesh>(null);
-  const gltf = useLoader(GLTFLoader, '/models/bitcoin.glb');
+  const { scene } = useGLTF('/models/bitcoin.glb');
   
   useFrame((state, delta) => {
     if (spinning && modelRef.current) {
@@ -19,7 +18,7 @@ function Model({ spinning = true }) {
   return (
     <primitive 
       ref={modelRef}
-      object={gltf.scene} 
+      object={scene} 
       scale={2.5} 
       position={[0, 0, 0]} 
     />
