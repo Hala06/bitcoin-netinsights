@@ -406,12 +406,12 @@ export default function FeaturePanel() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {{
+                  {[
                     { name: 'ORDI', price: '$425.15', change: '+3.2%', volume: '$12.5M' },
                     { name: 'SATS', price: '$0.00052', change: '-1.5%', volume: '$8.7M' },
                     { name: 'MEME', price: '$0.075', change: '+8.3%', volume: '$6.3M' },
-                    { name: 'PEPE', price: '$0.042', change: '+0.8%', volume: '$4.2M' },
-                  }.map((token, i) => (
+                    { name: 'PEPE', price: '$0.042', change: '+0.8%', volume: '$4.2M' }
+                  ].map((token, i) => (
                     <tr key={token.name}>
                       <td className="px-4 py-3 text-white font-medium">{token.name}</td>
                       <td className="px-4 py-3 text-right text-white font-mono">{token.price}</td>

@@ -53,7 +53,10 @@ export async function getMempoolData(): Promise<MempoolStats> {
     const loadPercentage = Math.min(100, Math.floor((mempoolSize / 100) * 100)); // % of capacity
     
     return {
-      fees: res.data,
+      fees: {
+        ...res.data,
+        minimumFee: 1 // Add minimum fee to API response
+      },
       mempoolSize,
       pendingTxCount,
       loadPercentage
@@ -67,7 +70,8 @@ export async function getMempoolData(): Promise<MempoolStats> {
         fastestFee: 25,
         halfHourFee: 20,
         hourFee: 15,
-        economyFee: 10
+        economyFee: 10,
+        minimumFee: 1
       },
       mempoolSize: 60,
       pendingTxCount: 12000,
