@@ -39,7 +39,8 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
       try {
         setLoading(true);
         const drivechainData = await getDrivechainStats();
-        setData(drivechainData);
+        setData(() => drivechainData);
+
 
         const activeChains = drivechainData.drivechains.filter((dc: Drivechain) => dc.status === 'active');
         if (activeChains.length > 0 && !selectedDrivechain) {
