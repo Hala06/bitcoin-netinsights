@@ -17,23 +17,11 @@ const isPublic = (path: string) => {
 // Create a route matcher
 const isPublicRoute = createRouteMatcher(publicPaths);
 
-// Export middleware function
-export default function middleware(request: NextRequest) {
-  // Safe path extraction with fallback
-  const path = request.nextUrl?.pathname || "/";
-  
-  // Public paths are always accessible
-  if (isPublic(path)) {
-    return NextResponse.next();
-  }
-  
-  // For protected routes, use Clerk middleware with correct redirect properties
-  return clerkMiddleware({
-    // Use the recommended properties instead of afterSignInUrl
-    fallbackRedirectUrl: '/dashboard',
-    publicRoutes: publicPaths
-  })(request);
-}
+// Use Clerk middleware directly
+export default clerkMiddleware({
+  afterSignInUrl: '/dashboard',
+  afterSignUpUrl: '/dashboard'
+});
 
 // Configure which routes this middleware will run on
 export const config = {
