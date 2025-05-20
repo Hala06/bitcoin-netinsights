@@ -123,7 +123,7 @@ class WebGLErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBounda
 // Fallback 2D component when WebGL fails
 function BitcoinFallback() {
   return (
-    <div cla  ssName="w-full h-full flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center">
       <motion.div
         className="w-24 h-24 bg-[#f7931a] rounded-full flex items-center justify-center"
         animate={{ 
