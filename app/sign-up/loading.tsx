@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion/dom';
+// Import from framer-motion instead of framer-motion/dom
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoadingPage() {
   return (
