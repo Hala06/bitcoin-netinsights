@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion/dom';
+import { motion } from 'framer-motion';
 import { useTheme } from '@/app/contexts/ThemeContext';
 
 interface BitcoinModel3DProps {
