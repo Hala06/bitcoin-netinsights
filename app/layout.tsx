@@ -28,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <ClerkProvider 
         signInUrl="/sign-in"
         // Use the recommended property instead of the deprecated afterSignInUrl
-        fallbackRedirectUrl="/dashboard"
+        signInFallbackRedirectUrl="/dashboard"
         appearance={{
           baseTheme: dark,
           variables: {
