@@ -21,11 +21,14 @@ export const metadata: Metadata = {
   description: "Real-time transparency on Bitcoin's network activity",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Make the function async to allow for awaiting headers if needed
+  
   return (
       <ClerkProvider 
         signInUrl="/sign-in"
-        afterSignInUrl="/dashboard"
+        // Use the recommended property instead of the deprecated afterSignInUrl
+        fallbackRedirectUrl="/dashboard"
         appearance={{
           baseTheme: dark,
           variables: {
