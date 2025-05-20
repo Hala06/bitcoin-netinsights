@@ -58,7 +58,7 @@ function Bitcoin3DModel() {
 
 useGLTF.preload('/models/bitcoin.glb')
 
-export default function BitcoinModel() {
+export default function BitcoinLogo() {
   return (
     <div className="w-full h-full">
       <Canvas 

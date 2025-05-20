@@ -1,15 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        bitcoin: '#f7931a',
+        dark: {
+          primary: '#121212',
+          secondary: '#1A1A1A',
+        },
+        light: {
+          primary: '#FAFAFA',
+          secondary: '#F5F5F5',
+        },
+        bitcoin: '#f7931a'
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',

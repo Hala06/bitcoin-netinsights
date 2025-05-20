@@ -44,7 +44,7 @@ export default function MemecoinTracker({ compact = false }: MemecoinTrackerProp
     fetchData();
     
     // Set up automatic refresh interval
-    const intervalId = setInterval(fetchData, 60000); // refresh every minute
+    const intervalId = setInterval(fetchData, 15000); // refresh every 15 seconds
     
     return () => clearInterval(intervalId);
   }, []);

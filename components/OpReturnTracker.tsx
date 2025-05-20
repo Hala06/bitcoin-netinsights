@@ -36,8 +36,8 @@ export default function OpReturnTracker({ compact = false }: OpReturnTrackerProp
   useEffect(() => {
     fetchData();
     
-    // Set up auto-refresh every 60 seconds
-    const intervalId = setInterval(fetchData, 60000);
+    // Set up auto-refresh every 15 seconds
+    const intervalId = setInterval(fetchData, 15000);
     
     return () => clearInterval(intervalId);
   }, []);
@@ -104,7 +104,7 @@ export default function OpReturnTracker({ compact = false }: OpReturnTrackerProp
                 </div>
                 
                 <div className="text-xs font-medium px-3 py-1 bg-blue-900/30 text-blue-400 rounded-full">
-                  {data.dailyTransactions.toLocaleString()} TXs
+                  {data.dailyCount?.toLocaleString()} TXs
                 </div>
               </div>
               
@@ -197,7 +197,7 @@ export default function OpReturnTracker({ compact = false }: OpReturnTrackerProp
                     <div className="mt-4 md:mt-0">
                       <div className="text-gray-400 text-xs mb-1">Total Transactions</div>
                       <div className="text-white text-2xl font-bold">
-                        {data.dailyTransactions.toLocaleString()}
+                        {data.dailyCount?.toLocaleString()}
                       </div>
                     </div>
                   </div>

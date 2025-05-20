@@ -73,12 +73,12 @@ export function CustomThemeProvider({ children }: CustomThemeProviderProps) {
 
   const getThemeColor = (scheme: ColorScheme): string => {
     const colors = {
-      default: '#f7931a',
-      drivechain: '#6366f1',
-      mempool: '#22c55e',
-      opreturn: '#f43f5e',
-      memecoin: '#d946ef',
-      model: '#3b82f6',
+      default: theme === 'dark' ? '#f7931a' : '#B3261E',
+      drivechain: theme === 'dark' ? '#6366f1' : '#2A4E76',
+      mempool: theme === 'dark' ? '#22c55e' : '#166534',
+      opreturn: theme === 'dark' ? '#f43f5e' : '#BE123C',
+      memecoin: theme === 'dark' ? '#d946ef' : '#A21CAF',
+      model: theme === 'dark' ? '#3b82f6' : '#1D4ED8'
     };
     return colors[scheme];
   };

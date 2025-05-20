@@ -35,8 +35,8 @@ export default function MempoolStatus({ compact = false }: MempoolStatusProps) {
   useEffect(() => {
     fetchData();
     
-    // Set up auto-refresh every 30 seconds
-    const intervalId = setInterval(fetchData, 30000);
+    // Set up auto-refresh every 15 seconds
+    const intervalId = setInterval(fetchData, 15000);
     
     return () => clearInterval(intervalId);
   }, []);

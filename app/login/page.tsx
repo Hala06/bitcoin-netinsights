@@ -1,72 +1,90 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import Image from 'next/image';
+import { Bitcoin, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const { isLoaded, userId } = useAuth();
+  
+  // Check if user is already logged in
+  useEffect(() => {
+    if (isLoaded && userId) {
+      router.push('/dashboard');
+    }
+  }, [isLoaded, userId, router]);
 
-  const handleLogin = () => {
-    // In a real application, you would authenticate the user here.
-    // For this example, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+  const handleSignIn = () => {
+    router.push('/sign-in');
   };
 
-  const handleSignup = () => {
-    // In a real application, you would create a new user account here.
-    // For this example, we'll just redirect to the dashboard.
-    router.push('/dashboard');
+  const handleSignUp = () => {
+    router.push('/sign-up');
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-96">
-        <h2 className="text-2xl font-semibold mb-4">Login / Signup</h2>
-        <div className="mb-4">
-          <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
-            Username
-          </label>
-          <input
-            type="text"
-            id="username"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0D1B2A]">
+      <motion.div
+        className="bg-[#1A2B3B] p-8 rounded-xl shadow-2xl w-full max-w-md border border-gray-800"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex items-center justify-center mb-8">
+          <Bitcoin className="h-10 w-10 text-[#f7931a] mr-3" />
+          <h1 className="text-3xl font-bold text-white">NetInsights</h1>
         </div>
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="button"
-            onClick={handleLogin}
+        
+        <h2 className="text-2xl font-semibold mb-6 text-white text-center">Welcome Back</h2>
+        
+        <p className="text-gray-400 mb-8 text-center">
+          Access real-time Bitcoin network data and analytics with your account
+        </p>
+        
+        <div className="space-y-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-r from-[#B3261E] to-[#660000] w-full py-3 px-4 rounded-lg text-white font-medium flex items-center justify-center"
+            onClick={handleSignIn}
           >
-            Login
-          </button>
-          <button
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="button"
-            onClick={handleSignup}
+            Sign In <ArrowRight className="ml-2 h-4 w-4" />
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gray-800 hover:bg-gray-700 w-full py-3 px-4 rounded-lg text-white font-medium border border-gray-700 flex items-center justify-center"
+            onClick={handleSignUp}
           >
-            Sign Up
-          </button>
+            Create Account <ArrowRight className="ml-2 h-4 w-4" />
+          </motion.button>
         </div>
-      </div>
+        
+        <div className="mt-8 pt-6 border-t border-gray-800 text-center">
+          <p className="text-gray-500 text-sm">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
+        </div>
+      </motion.div>
+      
+      <motion.div 
+        className="mt-8 flex items-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        <button 
+          onClick={() => router.push('/onboarding')}
+          className="text-gray-400 hover:text-white transition-colors duration-200"
+        >
+          Back to home
+        </button>
+      </motion.div>
     </div>
   );
 }

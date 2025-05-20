@@ -69,7 +69,7 @@ export default function FeatureCard({
             <div className="absolute inset-0 z-0 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-t from-[#0D1B2A] via-[#0D1B2A]/80 to-transparent z-10" />
               <motion.div
-                className="w-full h-full"
+                className="w-full h-full relative" 
                 initial={{ scale: 1.1 }}
                 whileHover={{ scale: 1.2 }}
                 transition={{ duration: 10 }}
@@ -106,7 +106,6 @@ export default function FeatureCard({
                 <ChevronDown className="ml-1 w-4 h-4 transform -rotate-90" />
               </motion.div>
             </div>
-            
             {/* Hover effect */}
             <motion.div
               className="absolute bottom-0 left-0 right-0 h-1"
@@ -159,7 +158,6 @@ export default function FeatureCard({
                 <p className="text-gray-400">{description}</p>
               </div>
             </div>
-            
             {/* Extended content */}
             <div>{content}</div>
           </motion.div>

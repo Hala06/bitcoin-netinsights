@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProviderWrapper } from '@/components/ThemeProviderWrapper';
 import Navbar from '@/components/Navbar';
 import "./globals.css";
+import { ClerkProvider } from '@clerk/nextjs';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,13 +22,27 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProviderWrapper>
-          <Navbar />
-          {children}
-        </ThemeProviderWrapper>
-      </body>
-    </html>
+      <ClerkProvider 
+        fallbackRedirectUrl="/dashboard"
+        appearance={{
+          baseTheme: 'dark',
+          variables: {
+            colorPrimary: '#f7931a',
+            colorBackground: '#0D1B2A',
+            colorInputBackground: '#1B263B',
+            colorText: '#ffffff',
+            colorTextSecondary: '#E0E0E0',
+          }
+        }}
+      >
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <ThemeProviderWrapper>
+            <Navbar />
+            {children}
+          </ThemeProviderWrapper>
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

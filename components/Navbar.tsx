@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { Sun, Moon, Menu, X, User } from 'lucide-react';
+import { useUser, SignInButton, SignOutButton } from "@clerk/nextjs";
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 
@@ -12,6 +13,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const { isSignedIn, user } = useUser();
   
   useEffect(() => {
     setMounted(true);
@@ -20,7 +22,6 @@ export default function Navbar() {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Dashboard', path: '/dashboard' },
-    { name: 'About', path: '/onboarding' },
   ];
   
   const toggleTheme = () => {
@@ -50,7 +51,7 @@ export default function Navbar() {
           </Link>
           
           {/* Desktop menu */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-4">
             <nav className="flex items-center space-x-6">
               {navItems.map((item) => (
                 <Link 
@@ -66,6 +67,25 @@ export default function Navbar() {
                 </Link>
               ))}
             </nav>
+
+            {isSignedIn ? (
+              <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">{user?.firstName || 'User'}</span>
+                </div>
+                <SignOutButton>
+                  <button className="text-sm text-red-500 hover:text-red-600">
+                    Sign out
+                  </button>
+                </SignOutButton>
+              </div>
+            ) : (
+              <SignInButton mode="modal">
+                <button className="text-sm text-blue-500 hover:text-blue-600">
+                  Sign in
+                </button>
+              </SignInButton>
+            )}
             
             <motion.button
               whileTap={{ scale: 0.95 }}
@@ -105,22 +125,45 @@ export default function Navbar() {
         className="md:hidden overflow-hidden"
       >
         <div className="container mx-auto px-4 pb-4">
-          <nav className="flex flex-col space-y-4">
-            {navItems.map((item) => (
-              <Link 
-                key={item.name}
-                href={item.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`text-sm font-medium py-2 transition-colors hover:text-[#B3261E] ${
-                  pathname === item.path 
-                    ? 'text-[#B3261E]' 
-                    : 'text-gray-600 dark:text-gray-300'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex flex-col space-y-4">
+            <nav className="flex flex-col space-y-4 border-b border-gray-200/10 dark:border-gray-800/10 pb-4">
+              {navItems.map((item) => (
+                <Link 
+                  key={item.name}
+                  href={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`text-sm font-medium py-2 transition-colors hover:text-[#B3261E] ${
+                    pathname === item.path 
+                      ? 'text-[#B3261E]' 
+                      : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
+
+            <div className="pt-2">
+              {isSignedIn ? (
+                <div className="flex flex-col space-y-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <span className="font-medium">{user?.firstName || 'User'}</span>
+                  </div>
+                  <SignOutButton>
+                    <button className="text-sm text-red-500 hover:text-red-600">
+                      Sign out
+                    </button>
+                  </SignOutButton>
+                </div>
+              ) : (
+                <SignInButton mode="modal">
+                  <button className="text-sm text-blue-500 hover:text-blue-600">
+                    Sign in
+                  </button>
+                </SignInButton>
+              )}
+            </div>
+          </div>
         </div>
       </motion.div>
     </header>

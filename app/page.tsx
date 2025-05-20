@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, ChevronRight, LineChart, Database, Network, Globe, Bitcoin } from 'lucide-react';
 import BitcoinModel from '@/components/BitcoinModel';
 import BackgroundAnimation from '@/app/components/BackgroundAnimation';
@@ -93,19 +94,8 @@ export default function HomePage() {
       
       {/* Hero Section */}
       <section className="relative min-h-screen overflow-hidden pt-20">
-        {/* Video background with overlay */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0D1B2A]/40 to-[#121212] z-10" />
-          <video 
-            className="w-full h-full object-cover"
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-          >
-            <source src="/background-dark.mp4" type="video/mp4" />
-          </video>
-        </div>
+        {/* Background gradient */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#0D1B2A] via-[#121212]/90 to-[#121212]" />
 
         <div className="container mx-auto px-6 relative z-10 h-[calc(100vh-80px)] flex flex-col justify-center">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -182,24 +172,49 @@ export default function HomePage() {
             >
               <div className="relative w-[450px] h-[450px]">
                 {/* Rotating glowing rings */}
+                {/* Feature circles */}
+                <motion.div 
+                  className="w-[400px] h-[400px] absolute inset-0 flex items-center justify-center"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
+                >
+                  {/* Mempool circle */}
+                  <motion.div 
+                    className="absolute -top-4 left-1/2 transform -translate-x-1/2 p-4 bg-green-500/20 rounded-full border-2 border-green-500/30 backdrop-blur-sm"
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <LineChart className="w-8 h-8 text-green-500" />
+                  </motion.div>
+                  
+                  {/* Drivechain circle */}
+                  <motion.div 
+                    className="absolute -bottom-4 -left-4 p-4 bg-blue-500/20 rounded-full border-2 border-blue-500/30 backdrop-blur-sm"
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <Network className="w-8 h-8 text-blue-500" />
+                  </motion.div>
+                  
+                  {/* OP_Return circle */}
+                  <motion.div 
+                    className="absolute -bottom-4 -right-4 p-4 bg-[#B3261E]/20 rounded-full border-2 border-[#B3261E]/30 backdrop-blur-sm"
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <Database className="w-8 h-8 text-[#B3261E]" />
+                  </motion.div>
+                </motion.div>
+                
+                {/* Inner rotating ring */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.div 
-                    className="w-[400px] h-[400px] rounded-full border-2 border-[#B3261E]/20"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-                  />
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div 
-                    className="w-[320px] h-[320px] rounded-full border-2 border-[#B3261E]/30"
+                    className="w-[200px] h-[200px] rounded-full border-2 border-[#B3261E]/30"
                     animate={{ rotate: -360 }}
                     transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
                   />
                 </div>
                 
-                {/* 3D Bitcoin model */}
+                {/* 3D Bitcoin model (smaller) */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <BitcoinModel height={300} width={300} />
+                  <BitcoinModel height={150} width={150} modelHeight={5.0} />
                 </div>
                 
                 {/* Data points floating around */}
@@ -301,11 +316,16 @@ export default function HomePage() {
                 variants={item}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70 z-10" />
-                <img 
-                  src={feature.image} 
-                  alt={feature.title} 
-                  className="w-full h-64 object-cover object-center transform group-hover:scale-110 transition-transform duration-3000"
-                />
+                <div className="relative w-full h-64" style={{ position: 'relative' }}>
+                  <Image 
+                    src={feature.image} 
+                    alt={feature.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    className="object-cover object-center transform group-hover:scale-110 transition-transform duration-3000"
+                    priority
+                  />
+                </div>
                 
                 <div className="absolute inset-0 z-20 p-6 flex flex-col justify-end">
                   <div 

@@ -60,7 +60,7 @@ export default function DrivechainActivity({ compact = false }: DrivechainActivi
     };
 
     fetchData();
-    const intervalId = setInterval(fetchData, 60000);
+    const intervalId = setInterval(fetchData, 15000);
     return () => clearInterval(intervalId);
   }, []);
 
