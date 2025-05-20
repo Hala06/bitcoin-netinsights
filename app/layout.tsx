@@ -4,6 +4,7 @@ import { ThemeProviderWrapper } from '@/components/ThemeProviderWrapper';
 import Navbar from '@/components/Navbar';
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
+import { dark } from '@clerk/themes';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,9 +24,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
       <ClerkProvider 
-        fallbackRedirectUrl="/dashboard"
+        signInUrl="/sign-in"
+        afterSignInUrl="/dashboard"
         appearance={{
-          baseTheme: 'dark',
+          baseTheme: dark,
           variables: {
             colorPrimary: '#f7931a',
             colorBackground: '#0D1B2A',
