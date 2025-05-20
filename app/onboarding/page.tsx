@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useTheme } from '@/app/contexts/ThemeContext'; // Add this import
 
 import { Activity, ArrowRight, BarChart2, Database, Globe, Bitcoin } from 'lucide-react';
 import FeatureCard from '@/app/components/FeatureCard';
 import BitcoinModel from '@/components/BitcoinModel';
 
 export default function OnboardingPage() {
-  const { theme } = useTheme();
+  const { mode } = useTheme(); // Changed from theme to mode
   const router = useRouter();
   const [activeFeature, setActiveFeature] = useState<string | null>(null);
   const [showFeatures, setShowFeatures] = useState(false);
@@ -19,27 +20,27 @@ export default function OnboardingPage() {
   // Map of feature titles to background color gradients
   const featureBackgroundColors = {
     "Mempool Congestion": {
-      base: theme === 'dark' ? "#22c55e" : "#166534", // Green
+      base: mode === 'dark' ? "#22c55e" : "#166534", // Green - Changed theme to mode
       backgroundFrom: "rgba(16, 185, 129, 0.15)",
       backgroundTo: "rgba(5, 150, 105, 0.05)"
     },
     "OP_Return Tracker": {
-      base: theme === 'dark' ? "#f43f5e" : "#be123c", // Red
+      base: mode === 'dark' ? "#f43f5e" : "#be123c", // Red - Changed theme to mode
       backgroundFrom: "rgba(244, 63, 94, 0.15)",
       backgroundTo: "rgba(190, 18, 60, 0.05)"
     },
     "Drivechain Activity": {
-      base: theme === 'dark' ? "#3b82f6" : "#1d4ed8", // Blue
+      base: mode === 'dark' ? "#3b82f6" : "#1d4ed8", // Blue - Changed theme to mode
       backgroundFrom: "rgba(59, 130, 246, 0.15)",
       backgroundTo: "rgba(29, 78, 216, 0.05)"
     },
     "Memecoin Tracker": {
-      base: theme === 'dark' ? "#d946ef" : "#a21caf", // Purple
+      base: mode === 'dark' ? "#d946ef" : "#a21caf", // Purple - Changed theme to mode
       backgroundFrom: "rgba(217, 70, 239, 0.15)",
       backgroundTo: "rgba(162, 28, 175, 0.05)"
     },
     "3D Bitcoin Visualization": {
-      base: theme === 'dark' ? "#f7931a" : "#b45309", // Bitcoin Orange
+      base: mode === 'dark' ? "#f7931a" : "#b45309", // Bitcoin Orange - Changed theme to mode
       backgroundFrom: "rgba(247, 147, 26, 0.15)",
       backgroundTo: "rgba(180, 83, 9, 0.05)"
     }
@@ -50,7 +51,7 @@ export default function OnboardingPage() {
       title: "Mempool Congestion",
       description: "Track Bitcoin network congestion and transaction fees in real-time",
       icon: <BarChart2 className="w-6 h-6" />,
-      color: theme === 'dark' ? "#22c55e" : "#166534",
+      color: mode === 'dark' ? "#22c55e" : "#166534", // Changed theme to mode
       bgImage: "/Mempool Congestion.jpg",
       content: (
         <div className="space-y-8">
@@ -116,7 +117,7 @@ export default function OnboardingPage() {
       title: "OP_Return Tracker",
       description: "Monitor data storage trends on the Bitcoin blockchain",
       icon: <Database className="w-6 h-6" />,
-      color: theme === 'dark' ? "#f43f5e" : "#be123c",
+      color: mode === 'dark' ? "#f43f5e" : "#be123c",
       bgImage: "/OP_Return Data Storage.jpg",
       content: (
         <div className="space-y-8">
@@ -178,7 +179,7 @@ export default function OnboardingPage() {
       title: "Drivechain Activity",
       description: "Explore Layer 2 sidechain usage and performance",
       icon: <Activity className="w-6 h-6" />,
-      color: theme === 'dark' ? "#3b82f6" : "#1d4ed8",
+      color: mode === 'dark' ? "#3b82f6" : "#1d4ed8",
       bgImage: "/drivechain.jpg",
       content: (
         <div className="space-y-8">
@@ -246,7 +247,7 @@ export default function OnboardingPage() {
       title: "Memecoin Tracker",
       description: "Follow BRC-20 token creation and trading activity",
       icon: <Bitcoin className="w-6 h-6" />,
-      color: theme === 'dark' ? "#d946ef" : "#a21caf",
+      color: mode === 'dark' ? "#d946ef" : "#a21caf",
       bgImage: "/Memecoin Tracker.jpg",
       content: (
         <div className="space-y-8">
@@ -308,7 +309,7 @@ export default function OnboardingPage() {
       title: "3D Bitcoin Visualization",
       description: "Interactive 3D model of Bitcoin network activity",
       icon: <Globe className="w-6 h-6" />,
-      color: theme === 'dark' ? "#f7931a" : "#b45309",
+      color: mode === 'dark' ? "#f7931a" : "#b45309",
       bgImage: "/Bitcoin 3D Model.jpg",
       content: (
         <div className="space-y-8">
