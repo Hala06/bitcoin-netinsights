@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
+
 import { Activity, ArrowRight, BarChart2, Database, Globe, Bitcoin } from 'lucide-react';
 import FeatureCard from '@/app/components/FeatureCard';
 import BitcoinModel from '@/components/BitcoinModel';

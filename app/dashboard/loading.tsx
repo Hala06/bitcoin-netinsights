@@ -1,3 +1,6 @@
+'use client';
+
+// Import specific components from framer-motion instead of using the default import
 import { motion } from "framer-motion";
 
 export default function LoadingPage() {

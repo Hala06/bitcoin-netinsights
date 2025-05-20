@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Network, ChevronRight, ArrowUpRight, Activity, Server, Users } from 'lucide-react';
 import { getDrivechainStats } from '@/app/lib/drivechain';

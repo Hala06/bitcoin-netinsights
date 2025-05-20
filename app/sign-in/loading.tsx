@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from "framer-motion";
+// Import specific components from framer-motion instead of using the default import
+import { motion, AnimatePresence } from "framer-motion/dom";
 
 export default function SignInLoading() {
   return (

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import BitcoinModel from '@/components/BitcoinModel';
 
 export default function ExtensionPage() {

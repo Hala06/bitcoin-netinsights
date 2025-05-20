@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, AlertTriangle, Check, ChevronRight, RefreshCw } from 'lucide-react';
 import { getMempoolData } from '@/app/lib/mempool';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bitcoin, TrendingUp, TrendingDown, Info, ChevronRight } from 'lucide-react';
 import { getMemecoinsActivity, getTokenCreationHistory, TokenInfo, MemeTokenEvent } from '@/app/lib/memecoin';
